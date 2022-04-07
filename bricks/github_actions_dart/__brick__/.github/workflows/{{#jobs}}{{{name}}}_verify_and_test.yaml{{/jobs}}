@@ -1,0 +1,34 @@
+name: {{#titleCase}}{{jobs.name}}{{/titleCase}}
+
+on:
+  pull_request:
+    branches:
+      - master
+      - main
+    paths:
+      - .github/workflows/{{{jobs.name}}}_verify_and_test.yaml
+      - {{{jobs.packageDir}}}/**
+{{{jobs.dependenciesDirs}}}
+  push:
+    branches:
+      - master
+      - main
+    paths:
+      - .github/workflows/**
+      - {{{jobs.packageDir}}}/**
+{{{jobs.dependenciesDirs}}}
+
+jobs:
+{{#jobs.usesFlutter}}  verify_and_test:
+    name: Verify and Test
+    uses: VeryGoodOpenSource/very_good_workflows/.github/workflows/flutter_package.yml@v1
+    with:
+      working_directory: {{{jobs.packageDir}}}{{#hasCovererageExcludes}}
+      coverage_excludes: {{{jobs.coverageExclude}}}{{/hasCovererageExcludes}}
+      min_coverage: {{minCoverage}}{{/jobs.usesFlutter}}{{^jobs.usesFlutter}}  verify_and_test:
+    name: Verify and Test
+    uses: VeryGoodOpenSource/very_good_workflows/.github/workflows/dart_package.yml@v1
+    with:
+      working_directory: {{{jobs.packageDir}}}{{#hasCovererageExcludes}}
+      coverage_excludes: {{{jobs.coverageExclude}}}{{/hasCovererageExcludes}}
+      min_coverage: {{minCoverage}}{{/jobs.usesFlutter}}

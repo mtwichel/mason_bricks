@@ -1,0 +1,12 @@
+name: github_actions_dart
+description: A brick that simplifies generating Github actions for Dart/Flutter monorepos
+version: 0.0.1
+vars:
+  exclude:
+    type: string
+    description: A json encoded list of packages (indexed by their name) that shouldn't generate a workflow file.
+    default: "[]"
+  minCoverage:
+    type: number
+    description: The minimum coverage required for a package to be considered passing.
+    default: 100

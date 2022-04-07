@@ -1,0 +1,34 @@
+name: Verify Github Actions
+
+on:
+  pull_request:
+    branches:
+      - master
+      - main
+  push:
+    branches:
+      - master
+      - main
+
+jobs:
+  verify:
+    name: Verify Mason Generator
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Setup Dart
+        uses: dart-lang/setup-dart@v1
+        with:
+          sdk: stable
+
+      - name: Install Mason
+        run: dart pub global activate mason_cli
+
+      - name: Get Bricks
+        run: mason get
+
+      - name: Test Github Actions Generation
+        run: mason make github_actions_dart --on-conflict overwrite --exclude '{{{exclude}}}' --minCoverage {{minCoverage}} --set-exit-if-changed
