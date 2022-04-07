@@ -1,5 +1,6 @@
 name: github_actions_dart
 description: A brick that simplifies generating Github actions for Dart/Flutter monorepos
+repository: https://github.com/mtwichel/mason_bricks
 version: 0.0.1
 vars:
   exclude:
