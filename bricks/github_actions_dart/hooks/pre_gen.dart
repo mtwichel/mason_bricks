@@ -1,4 +1,3 @@
-import 'dart:convert';
 import 'dart:io';
 
 import 'package:glob/glob.dart';
@@ -53,6 +52,7 @@ Future<List<Package>> getPackages() async {
 
   await for (final entry in pubspecMatcher.list()) {
     if (!(entry.path.contains('ios') ||
+        entry.path.contains('macos') ||
         entry.path.contains('.dart_tool') ||
         entry.path.contains('bricks'))) {
       final file = File(entry.path);

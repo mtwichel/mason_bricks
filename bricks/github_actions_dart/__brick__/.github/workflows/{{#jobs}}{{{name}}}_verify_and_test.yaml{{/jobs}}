@@ -26,8 +26,8 @@ jobs:
       working_directory: {{{jobs.packageDir}}}{{#hasCovererageExcludes}}
       coverage_excludes: {{{jobs.coverageExclude}}}{{/hasCovererageExcludes}}
       min_coverage: {{minCoverage}}
-      flutter_channel: stable
-      flutter_version: 2.10.5{{/jobs.usesFlutter}}{{^jobs.usesFlutter}}  verify_and_test:
+      flutter_channel: {{flutterChannel}}
+      flutter_version: {{{flutterVersion}}}{{/jobs.usesFlutter}}{{^jobs.usesFlutter}}  verify_and_test:
     name: Verify and Test
     uses: VeryGoodOpenSource/very_good_workflows/.github/workflows/dart_package.yml@v1
     with:
