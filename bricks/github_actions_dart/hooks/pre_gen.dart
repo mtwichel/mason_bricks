@@ -25,6 +25,8 @@ Future<void> run(HookContext context) async {
           usesFlutter: package.pubspec.dependencies.containsKey('flutter'),
           dependenciesDirs: currDependencies.join('\n'),
           coverageExclude: package.coverageExclude,
+          minimumCoverage:
+              package.minimumCoverage ?? context.vars['minCoverage'] ?? 100,
         );
       })
       .map((job) => job.toJson())
@@ -63,6 +65,7 @@ Future<List<Package>> getPackages() async {
       final parentPath = entry.parent.path;
 
       final coverageExclude = fileJson['coverage_exclude'];
+      final minimumCoverage = fileJson['minimum_coverage'] as num?;
       packages.add(
         Package(
           packageDir: parentPath.startsWith('./')
@@ -72,6 +75,7 @@ Future<List<Package>> getPackages() async {
           coverageExclude: coverageExclude is YamlList
               ? List<String>.from(coverageExclude)
               : [],
+          minimumCoverage: minimumCoverage,
         ),
       );
     }
@@ -138,6 +142,7 @@ class Job {
     required this.packageDir,
     required this.dependenciesDirs,
     required this.coverageExclude,
+    required this.minimumCoverage,
   });
 
   Map<String, dynamic> toJson() => {
@@ -147,6 +152,7 @@ class Job {
         'dependenciesDirs': dependenciesDirs,
         'coverageExclude': coverageExclude.join(' '),
         'hasCovererageExcludes': hasCovererageExcludes,
+        'minimumCoverage': minimumCoverage,
       };
 
   final bool usesFlutter;
@@ -154,6 +160,7 @@ class Job {
   final String packageDir;
   final String dependenciesDirs;
   final List<String> coverageExclude;
+  final num minimumCoverage;
 
   bool get hasCovererageExcludes => coverageExclude.isNotEmpty;
 }
@@ -163,8 +170,10 @@ class Package {
     required this.packageDir,
     required this.pubspec,
     required this.coverageExclude,
+    this.minimumCoverage,
   });
   final String packageDir;
   final Pubspec pubspec;
   final List<String> coverageExclude;
+  final num? minimumCoverage;
 }

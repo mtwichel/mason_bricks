@@ -1,3 +1,7 @@
+## 0.0.6
+- Make minimum configurable by package from the pubspec
+## 0.0.5
+- Make verification Github action set flutter version and channel
 ## 0.0.4
 - Added variables to control Flutter channel and version
 - Update default Flutter to version 3.0.0!

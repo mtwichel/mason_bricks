@@ -25,7 +25,7 @@ jobs:
     with:
       working_directory: {{{jobs.packageDir}}}{{#hasCovererageExcludes}}
       coverage_excludes: {{{jobs.coverageExclude}}}{{/hasCovererageExcludes}}
-      min_coverage: {{minCoverage}}
+      min_coverage: {{{jobs.minCoverage}}}
       flutter_channel: {{flutterChannel}}
       flutter_version: {{{flutterVersion}}}{{/jobs.usesFlutter}}{{^jobs.usesFlutter}}  verify_and_test:
     name: Verify and Test
@@ -33,4 +33,4 @@ jobs:
     with:
       working_directory: {{{jobs.packageDir}}}{{#hasCovererageExcludes}}
       coverage_excludes: {{{jobs.coverageExclude}}}{{/hasCovererageExcludes}}
-      min_coverage: {{minCoverage}}{{/jobs.usesFlutter}}
+      min_coverage: {{{jobs.minCoverage}}}{{/jobs.usesFlutter}}

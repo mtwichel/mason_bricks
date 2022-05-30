@@ -7,10 +7,13 @@ Run `mason make github_actions_dart` in the root of your monorepo. This will:
 
 ## Tips
 - You can exclude packages from the generation by changing the `exclude` variable. Just make sure it's formatted as an array of strings.
-- You can control the test coverage threshold by changing the `minCoverage` variable.
 - You can exclude lines of code from coverage on the packages by adding a *coverage_exclude* section to the package's `pubspec.yaml` file.
+- You can control the test coverage two ways:
+  - The first priority is on the package's `pubspec.yaml` file by setting the `minimum_coverage` field.
+  - The second priority if the `minCoverage` variable passed into the brick.
+  - If neither is set, a default of 100% will be set.
 
-`pubspec.yaml`
+Example `pubspec.yaml`
 ```yaml
 name: my_awesome_dart_package
 
@@ -20,4 +23,6 @@ dependencies:
 coverage_exclude:
   - "**/*.g.dart"
   - "**/*.ignorethis"
+
+minimum_coverage: 100
 ```
