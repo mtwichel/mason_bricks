@@ -1,0 +1,22 @@
+name: pretty_good_flutter_app
+description: A fork of the Core Very Good Flutter App without multiple environments.
+repository: https://github.com/mtwichel/mason_bricks
+version: 0.0.1
+environment:
+  mason: any
+vars:
+  project_name:
+    type: string
+    description: The project name
+    default: my_app
+    prompt: "What is the project name?"
+  org_name:
+    type: string
+    description: The organization name
+    default: com.example.app
+    prompt: "What is the organization name?"
+  description:
+    type: string
+    description: A short project description
+    default: A Pretty Good App
+    prompt: "What is the project description?"

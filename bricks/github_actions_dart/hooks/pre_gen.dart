@@ -19,14 +19,26 @@ Future<void> run(HookContext context) async {
             .toList();
 
         currDependencies.sort();
+        num getMinCov(Package package, Map<String, dynamic> vars) {
+          if (package.minimumCoverage is num) {
+            return package.minimumCoverage!;
+          }
+          if (context.vars['minCoverage'] is num) {
+            return context.vars['minCoverage'];
+          }
+          if (context.vars['minCoverage'] is String) {
+            return num.parse(context.vars['minCoverage']!);
+          }
+          return 100;
+        }
+
         return Job(
           name: package.pubspec.name,
           packageDir: package.packageDir,
           usesFlutter: package.pubspec.dependencies.containsKey('flutter'),
           dependenciesDirs: currDependencies.join('\n'),
           coverageExclude: package.coverageExclude,
-          minimumCoverage:
-              package.minimumCoverage ?? context.vars['minCoverage'] ?? 100,
+          minimumCoverage: getMinCov(package, context.vars),
         );
       })
       .map((job) => job.toJson())
@@ -152,7 +164,7 @@ class Job {
         'dependenciesDirs': dependenciesDirs,
         'coverageExclude': coverageExclude.join(' '),
         'hasCovererageExcludes': hasCovererageExcludes,
-        'minimumCoverage': minimumCoverage,
+        'minCoverage': minimumCoverage,
       };
 
   final bool usesFlutter;

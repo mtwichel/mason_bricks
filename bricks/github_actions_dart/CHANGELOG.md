@@ -1,3 +1,6 @@
+## 0.0.7
+- Fix parsing issues for minimum coverage
+- Bump default flutter version to `3.0.1`
 ## 0.0.6
 - Make minimum configurable by package from the pubspec
 ## 0.0.5
