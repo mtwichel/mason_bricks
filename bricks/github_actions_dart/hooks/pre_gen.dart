@@ -60,7 +60,7 @@ Future<void> run(HookContext context) async {
 }
 
 Future<List<Package>> getPackages() async {
-  final pubspecMatcher = Glob("**/pubspec.yaml");
+  final pubspecMatcher = Glob("**pubspec.yaml");
 
   final packages = <Package>[];
 

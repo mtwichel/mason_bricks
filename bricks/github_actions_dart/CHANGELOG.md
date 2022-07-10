@@ -1,3 +1,6 @@
+## 0.0.8
+- Fixed issue where packages in current directory wouldn't generate
+- Bump default flutter version to `3.0.4`
 ## 0.0.7
 - Fix parsing issues for minimum coverage
 - Bump default flutter version to `3.0.1`
