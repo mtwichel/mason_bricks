@@ -6,16 +6,16 @@ on:
       - master
       - main
     paths:
-      - .github/workflows/{{{jobs.name}}}_verify_and_test.yaml
-      - {{{jobs.packageDir}}}/**
+      - '.github/workflows/{{{jobs.name}}}_verify_and_test.yaml'
+      - '{{{jobs.globPath}}}'
 {{{jobs.dependenciesDirs}}}
   push:
     branches:
       - master
       - main
     paths:
-      - .github/workflows/**
-      - {{{jobs.packageDir}}}/**
+      - '.github/workflows/**'
+      - '{{{jobs.globPath}}}'
 {{{jobs.dependenciesDirs}}}
 
 jobs:
@@ -33,4 +33,5 @@ jobs:
     with:
       working_directory: {{{jobs.packageDir}}}{{#hasCovererageExcludes}}
       coverage_excludes: {{{jobs.coverageExclude}}}{{/hasCovererageExcludes}}
+      dart_sdk: stable
       min_coverage: {{{jobs.minCoverage}}}{{/jobs.usesFlutter}}

@@ -35,6 +35,7 @@ Future<void> run(HookContext context) async {
         return Job(
           name: package.pubspec.name,
           packageDir: package.packageDir,
+          globPath: package.packageGlobPath,
           usesFlutter: package.pubspec.dependencies.containsKey('flutter'),
           dependenciesDirs: currDependencies.join('\n'),
           coverageExclude: package.coverageExclude,
@@ -75,11 +76,20 @@ Future<List<Package>> getPackages() async {
       final pubspec = Pubspec.fromJson(fileJson);
 
       final parentPath = entry.parent.path;
+      final String globPath;
+      if (parentPath.startsWith('./')) {
+        globPath = '${parentPath.substring(2)}/**';
+      } else if (parentPath.startsWith('.')) {
+        globPath = '**';
+      } else {
+        globPath = parentPath;
+      }
 
       final coverageExclude = fileJson['coverage_exclude'];
       final minimumCoverage = fileJson['minimum_coverage'] as num?;
       packages.add(
         Package(
+          packageGlobPath: globPath,
           packageDir: parentPath.startsWith('./')
               ? parentPath.substring(2)
               : parentPath,
@@ -155,12 +165,14 @@ class Job {
     required this.dependenciesDirs,
     required this.coverageExclude,
     required this.minimumCoverage,
+    required this.globPath,
   });
 
   Map<String, dynamic> toJson() => {
         'usesFlutter': usesFlutter,
         'name': name,
         'packageDir': packageDir,
+        'globPath': globPath,
         'dependenciesDirs': dependenciesDirs,
         'coverageExclude': coverageExclude.join(' '),
         'hasCovererageExcludes': hasCovererageExcludes,
@@ -173,6 +185,7 @@ class Job {
   final String dependenciesDirs;
   final List<String> coverageExclude;
   final num minimumCoverage;
+  final String globPath;
 
   bool get hasCovererageExcludes => coverageExclude.isNotEmpty;
 }
@@ -182,10 +195,12 @@ class Package {
     required this.packageDir,
     required this.pubspec,
     required this.coverageExclude,
+    required this.packageGlobPath,
     this.minimumCoverage,
   });
   final String packageDir;
   final Pubspec pubspec;
   final List<String> coverageExclude;
+  final String packageGlobPath;
   final num? minimumCoverage;
 }
