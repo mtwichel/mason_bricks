@@ -1,3 +1,7 @@
+## 0.0.9
+- Fixed top level packages not activating in Github actions
+- Added variable for Dart SDK
+
 ## 0.0.8
 - Fixed issue where packages in current directory wouldn't generate
 - Bump default flutter version to `3.0.4`

@@ -33,5 +33,5 @@ jobs:
     with:
       working_directory: {{{jobs.packageDir}}}{{#hasCovererageExcludes}}
       coverage_excludes: {{{jobs.coverageExclude}}}{{/hasCovererageExcludes}}
-      dart_sdk: stable
+      dart_sdk: {{{dartChannel}}}
       min_coverage: {{{jobs.minCoverage}}}{{/jobs.usesFlutter}}

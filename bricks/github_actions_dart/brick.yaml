@@ -1,7 +1,7 @@
 name: github_actions_dart
 description: A brick that simplifies generating Github actions for Dart/Flutter monorepos
 repository: https://github.com/mtwichel/mason_bricks
-version: 0.0.8
+version: 0.0.9
 vars:
   exclude:
     type: string
@@ -18,4 +18,8 @@ vars:
   flutterChannel:
     type: string
     description: The channel to use for Flutter.
+    default: stable
+  dartChannel:
+    type: string
+    description: The dart channel to use.
     default: stable
