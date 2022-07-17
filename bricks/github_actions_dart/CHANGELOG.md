@@ -1,3 +1,6 @@
+## 0.0.10
+- Fixed verify github actions workflow to include dartChannel variable
+
 ## 0.0.9
 - Fixed top level packages not activating in Github actions
 - Added variable for Dart SDK
