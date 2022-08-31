@@ -1,4 +1,4 @@
-## 0.0.11
+## 0.0.12
 
 - Added an exclude paths variable, which can be used to exclude any `pubspec.yaml` files that match a particular path.
 - Updated default flutter version to `3.3.0`
