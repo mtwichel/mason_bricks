@@ -1,11 +1,11 @@
 name: github_actions_dart
 description: A brick that simplifies generating Github actions for Dart/Flutter monorepos
 repository: https://github.com/mtwichel/mason_bricks
-version: 0.0.10
+version: 0.0.11
 vars:
   exclude:
     type: string
-    description: A space seperated list of packages (indexed by their name) that shouldn't generate a workflow file.
+    description: A space separated list of packages (indexed by their name) that shouldn't generate a workflow file.
     default: ""
   minCoverage:
     type: number
@@ -14,7 +14,7 @@ vars:
   flutterVersion:
     type: string
     description: The version of Flutter to use.
-    default: 3.0.4
+    default: 3.3.0
   flutterChannel:
     type: string
     description: The channel to use for Flutter.

@@ -8,17 +8,18 @@ import 'package:mason/mason.dart';
 import 'package:yaml/yaml.dart';
 
 Future<void> run(HookContext context) async {
+  final excludePaths = context.vars['excludePaths'] as String?;
   final searchingCallback = context.logger.progress('Searching for packages.');
-  final pubspecs = await getPackages();
-  searchingCallback('Found ${pubspecs.length} packages.');
+  final pubspecs = await getPackages(excludePaths?.split(' '));
+  searchingCallback.complete('Found ${pubspecs.length} packages.');
   final depGraph = buildDependencyGraph(pubspecs);
   final jobs = depGraph.keys
       .map((package) {
-        final currDependencies = depGraph[package]!
+        final currentDependencies = depGraph[package]!
             .map((dep) => '      - ${dep.packageDir}/**')
             .toList();
 
-        currDependencies.sort();
+        currentDependencies.sort();
         num getMinCov(Package package, Map<String, dynamic> vars) {
           if (package.minimumCoverage is num) {
             return package.minimumCoverage!;
@@ -37,7 +38,7 @@ Future<void> run(HookContext context) async {
           packageDir: package.packageDir,
           globPath: package.packageGlobPath,
           usesFlutter: package.pubspec.dependencies.containsKey('flutter'),
-          dependenciesDirs: currDependencies.join('\n'),
+          dependenciesDirs: currentDependencies.join('\n'),
           coverageExclude: package.coverageExclude,
           minimumCoverage: getMinCov(package, context.vars),
         );
@@ -51,7 +52,7 @@ Future<void> run(HookContext context) async {
     exclude = List<String>.from(exclude.split(' '));
   } else {
     throw Exception(
-      'Exclude var must be a list of strings seperated by spaces',
+      'Exclude var must be a list of strings separated by spaces',
     );
   }
   context.vars = {
@@ -60,16 +61,16 @@ Future<void> run(HookContext context) async {
   };
 }
 
-Future<List<Package>> getPackages() async {
+Future<List<Package>> getPackages(List<String>? excludedPaths) async {
   final pubspecMatcher = Glob("**pubspec.yaml");
+  final defaultExcludedPaths = ['ios', 'macos', '.dart_tool', 'bricks', '.fvm'];
+  final badMatcher =
+      RegExp([...defaultExcludedPaths, ...?excludedPaths].join('|'));
 
   final packages = <Package>[];
 
   await for (final entry in pubspecMatcher.list()) {
-    if (!(entry.path.contains('ios') ||
-        entry.path.contains('macos') ||
-        entry.path.contains('.dart_tool') ||
-        entry.path.contains('bricks'))) {
+    if (!badMatcher.hasMatch(entry.path)) {
       final file = File(entry.path);
       final fileString = await file.readAsString();
       final fileJson = loadYaml(fileString);
@@ -175,7 +176,7 @@ class Job {
         'globPath': globPath,
         'dependenciesDirs': dependenciesDirs,
         'coverageExclude': coverageExclude.join(' '),
-        'hasCovererageExcludes': hasCovererageExcludes,
+        'hasCoverageExcludes': hasCoverageExcludes,
         'minCoverage': minimumCoverage,
       };
 
@@ -187,7 +188,7 @@ class Job {
   final num minimumCoverage;
   final String globPath;
 
-  bool get hasCovererageExcludes => coverageExclude.isNotEmpty;
+  bool get hasCoverageExcludes => coverageExclude.isNotEmpty;
 }
 
 class Package {
