@@ -1,3 +1,7 @@
+## 0.0.13
+
+- Added the ability to generate a dependabot.yml file in addition to workflow files.
+
 ## 0.0.12
 
 - Added an exclude paths variable, which can be used to exclude any `pubspec.yaml` files that match a particular path.

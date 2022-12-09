@@ -1,7 +1,7 @@
 name: github_actions_dart
 description: A brick that simplifies generating Github actions for Dart/Flutter monorepos
-repository: https://github.com/mtwichel/mason_bricks
-version: 0.0.12
+repository: https://github.com/mtwichel/mason_bricks/tree/main/bricks/github_actions_dart
+version: 0.0.13
 vars:
   exclude:
     type: string
@@ -23,3 +23,16 @@ vars:
     type: string
     description: The dart channel to use.
     default: stable
+  generateDependabot:
+    type: boolean
+    description: Should this brick create a dependabot.yaml file.
+    default: false
+    prompt: Should I generate a dependabot.yaml file?
+  dependabotFrequency:
+    type: enum
+    description: The interval dependabot should check for updates.
+    default: weekly
+    values:
+      - daily
+      - weekly
+      - monthly

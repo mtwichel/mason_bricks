@@ -1,3 +1,5 @@
 .dart_tool
 .packages
 .vscode
+hooks/build/**
+**/.DS_Store
