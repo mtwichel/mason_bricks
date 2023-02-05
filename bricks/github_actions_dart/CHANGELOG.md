@@ -1,3 +1,9 @@
+## 0.0.14
+
+- Added spell check workflow
+- Added concurrency helper
+- Added semantic pull request job to verify and check
+
 ## 0.0.13
 
 - Added the ability to generate a dependabot.yml file in addition to workflow files.
