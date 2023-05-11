@@ -1,9 +1,9 @@
 name: {{#titleCase}}{{jobs.name}}{{/titleCase}}
-
+{{=<% %>=}}
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
-
+<%={{ }}=%>
 on:
   pull_request:
     branches:
@@ -23,12 +23,9 @@ on:
 {{{jobs.dependenciesDirs}}}
 
 jobs:
-semantic_pull_request:
-    uses: VeryGoodOpenSource/very_good_workflows/.github/workflows/semantic_pull_request.yml@v1
-
 {{#jobs.usesFlutter}}  verify_and_test:
     name: Verify and Test
-    uses: VeryGoodOpenSource/very_good_workflows/.github/workflows/flutter_package.yml@v1
+    uses: VeryGoodOpenSource/very_good_workflows/.github/workflows/flutter_package.yml@{{{workflowRef}}}
     with:
       working_directory: {{{jobs.packageDir}}}{{#hasCovererageExcludes}}
       coverage_excludes: {{{jobs.coverageExclude}}}{{/hasCovererageExcludes}}
@@ -36,7 +33,7 @@ semantic_pull_request:
       flutter_channel: {{flutterChannel}}
       flutter_version: {{{flutterVersion}}}{{/jobs.usesFlutter}}{{^jobs.usesFlutter}}  verify_and_test:
     name: Verify and Test
-    uses: VeryGoodOpenSource/very_good_workflows/.github/workflows/dart_package.yml@v1
+    uses: VeryGoodOpenSource/very_good_workflows/.github/workflows/dart_package.yml@{{{workflowRef}}}
     with:
       working_directory: {{{jobs.packageDir}}}{{#hasCovererageExcludes}}
       coverage_excludes: {{{jobs.coverageExclude}}}{{/hasCovererageExcludes}}

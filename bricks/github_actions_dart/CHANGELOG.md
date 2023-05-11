@@ -1,3 +1,16 @@
+## 0.0.17
+
+- Bumped default flutter version to `3.10.0`
+- Added `workflowRef` variable
+
+## 0.0.16
+
+- Added `spellCheckConfig` variable
+
+## 0.0.15
+
+- Fixed some issues ing 0.0.14
+
 ## 0.0.14
 
 - Added spell check workflow
