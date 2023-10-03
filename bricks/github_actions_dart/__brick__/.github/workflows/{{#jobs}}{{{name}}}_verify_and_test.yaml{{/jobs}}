@@ -1,4 +1,4 @@
-name: {{#titleCase}}{{jobs.name}}{{/titleCase}}
+name: {{jobs.name.titleCase()}}
 {{=<% %>=}}
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -10,16 +10,16 @@ on:
       - master
       - main
     paths:
-      - '.github/workflows/{{{jobs.name}}}_verify_and_test.yaml'
-      - '{{{jobs.globPath}}}'
+      - ".github/workflows/{{{jobs.name}}}_verify_and_test.yaml"
+      - "{{{jobs.globPath}}}"
 {{{jobs.dependenciesDirs}}}
   push:
     branches:
       - master
       - main
     paths:
-      - '.github/workflows/**'
-      - '{{{jobs.globPath}}}'
+      - ".github/workflows/**"
+      - "{{{jobs.globPath}}}"
 {{{jobs.dependenciesDirs}}}
 
 jobs:
@@ -27,15 +27,20 @@ jobs:
     name: Verify and Test
     uses: VeryGoodOpenSource/very_good_workflows/.github/workflows/flutter_package.yml@{{{workflowRef}}}
     with:
-      working_directory: {{{jobs.packageDir}}}{{#hasCovererageExcludes}}
-      coverage_excludes: {{{jobs.coverageExclude}}}{{/hasCovererageExcludes}}
+      working_directory: {{{jobs.packageDir}}}{{#jobs.hasCoverageExcludes}}
+      coverage_excludes: "{{{jobs.coverageExclude}}}"{{/jobs.hasCoverageExcludes}}{{#jobs.hasAnalyzeDirectories}}
+      analyze_directories: "{{{jobs.analyzeDirectories}}}"{{/jobs.hasAnalyzeDirectories}}{{#jobs.hasFormatDirectories}}
+      format_directories: "{{{jobs.formatDirectories}}}"{{/jobs.hasFormatDirectories}}
       min_coverage: {{{jobs.minCoverage}}}
       flutter_channel: {{flutterChannel}}
       flutter_version: {{{flutterVersion}}}{{/jobs.usesFlutter}}{{^jobs.usesFlutter}}  verify_and_test:
     name: Verify and Test
     uses: VeryGoodOpenSource/very_good_workflows/.github/workflows/dart_package.yml@{{{workflowRef}}}
     with:
-      working_directory: {{{jobs.packageDir}}}{{#hasCovererageExcludes}}
-      coverage_excludes: {{{jobs.coverageExclude}}}{{/hasCovererageExcludes}}
+      working_directory: {{{jobs.packageDir}}}{{#jobs.hasCoverageExcludes}}
+      coverage_excludes: "{{{jobs.coverageExclude}}}"{{/jobs.hasCoverageExcludes}}{{#jobs.hasAnalyzeDirectories}}
+      analyze_directories: "{{{jobs.analyzeDirectories}}}"{{/jobs.hasAnalyzeDirectories}}{{#jobs.hasFormatDirectories}}
+      format_directories: "{{{jobs.formatDirectories}}}"{{/jobs.hasFormatDirectories}}{{#jobs.hasReportOnDirectories}}
+      report_on: "{{{jobs.reportOnDirectories}}}"{{/jobs.hasReportOnDirectories}}
       dart_sdk: {{{dartChannel}}}
       min_coverage: {{{jobs.minCoverage}}}{{/jobs.usesFlutter}}

@@ -1,0 +1,3 @@
+#!/bin/sh
+
+mason make github_actions_dart --on-conflict overwrite --exclude '{{{exclude}}}' --minCoverage {{minCoverage}} --flutterVersion '{{{flutterVersion}}}' --flutterChannel {{flutterChannel}} --dartChannel {{dartChannel}} --dependabotFrequency {{dependabotFrequency}} --generateDependabot {{generateDependabot}} --generateSemanticPullRequest {{generateSemanticPullRequest}} --generateSpellCheck {{generateSpellCheck}} --spellCheckConfig {{{spellCheckConfig}}} --workflowRef {{{workflowRef}}}
