@@ -5,7 +5,7 @@ version: 0.0.18
 vars:
   exclude:
     type: string
-    description: A space separated list of packages (indexed by their name) that shouldn't generate a workflow file.
+    description: A space separated list of packages that shouldn't generate a workflow file.
     default: ""
   minCoverage:
     type: number
@@ -14,7 +14,7 @@ vars:
   flutterVersion:
     type: string
     description: The version of Flutter to use.
-    default: 3.10.0
+    default: 3.13.6
   flutterChannel:
     type: string
     description: The channel to use for Flutter.
@@ -26,8 +26,18 @@ vars:
   generateDependabot:
     type: boolean
     description: Should this brick create a dependabot.yaml file.
-    default: false
+    default: true
     prompt: Should I generate a dependabot.yaml file?
+  generateSemanticPullRequest:
+    type: boolean
+    description: Should this brick create a semantic pull request workflow.
+    default: true
+    prompt: Should I generate a semantic pull request workflow?
+  generateSpellCheck:
+    type: boolean
+    description: Should this brick create a spell check workflow.
+    default: true
+    prompt: Should I generate a spell check workflow?
   dependabotFrequency:
     type: enum
     description: The interval dependabot should check for updates.
@@ -39,8 +49,8 @@ vars:
   spellCheckConfig:
     type: string
     description: The location of the cspell.json.
-    default: ".github/cspell.json"
+    default: "cspell.json"
   workflowRef:
     type: string
     description: The ref to get a workflow.
-    default: "v1.12.0"
+    default: "main"

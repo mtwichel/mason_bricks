@@ -1,3 +1,11 @@
+## 1.0.0
+
+- **Breaking**: Package specific configurations now are read from a `actions_config.yaml` file, not the package's `pubspec`. See README for details.
+- Added `generate_github_actions.sh` file with configured options to quickly update files.
+- Bumped Flutter version to 3.13.6
+- Changed defaults for workflowRef, cspell config
+- Added flags to prevent generating semantic pull request and spell checker
+
 ## 0.0.17
 
 - Bumped default flutter version to `3.10.0`

@@ -1,71 +1,104 @@
 import 'dart:io';
 
+import 'package:collection/collection.dart';
 import 'package:glob/glob.dart';
 import 'package:glob/list_local_fs.dart';
-import 'package:pubspec_parse/pubspec_parse.dart';
-
 import 'package:mason/mason.dart';
+import 'package:pubspec_parse/pubspec_parse.dart';
 import 'package:yaml/yaml.dart';
 
 Future<void> run(HookContext context) async {
-  final excludePaths = context.vars['excludePaths'] as String?;
   final searchingCallback = context.logger.progress('Searching for packages.');
-  final pubspecs = await getPackages(excludePaths?.split(' '));
+  final pubspecs = await getPackages();
   searchingCallback.complete('Found ${pubspecs.length} packages.');
   final depGraph = buildDependencyGraph(pubspecs);
-  final jobs = depGraph.keys
-      .map((package) {
-        final currentDependencies = depGraph[package]!
-            .map((dep) => '      - ${dep.packageDir}/**')
-            .toList();
+  final jobs = depGraph.keys.map((package) {
+    final currentDependencies = depGraph[package]!
+        .map((dep) => '      - "${dep.packageDir}/**"')
+        .sorted();
 
-        currentDependencies.sort();
-        num getMinCov(Package package, Map<String, dynamic> vars) {
-          if (package.minimumCoverage is num) {
-            return package.minimumCoverage!;
-          }
-          if (context.vars['minCoverage'] is num) {
-            return context.vars['minCoverage'];
-          }
-          if (context.vars['minCoverage'] is String) {
-            return num.parse(context.vars['minCoverage']!);
-          }
-          return 100;
-        }
+    final config =
+        readConfigFile(logger: context.logger, path: package.packageDir);
 
-        return Job(
-          name: package.pubspec.name,
-          packageDir: package.packageDir,
-          globPath: package.packageGlobPath,
-          usesFlutter: package.pubspec.dependencies.containsKey('flutter'),
-          dependenciesDirs: currentDependencies.join('\n'),
-          coverageExclude: package.coverageExclude,
-          minimumCoverage: getMinCov(package, context.vars),
-        );
-      })
-      .map((job) => job.toJson())
-      .toList()
-    ..sort(((a, b) => a['name'].compareTo(b['name'])));
+    final rawConfigCoverageExclude = config['coverage_exclude'];
+    final configCoverageExclude = switch (rawConfigCoverageExclude) {
+      String() => [rawConfigCoverageExclude],
+      List<String>() => rawConfigCoverageExclude,
+      List() => List<String>.from(rawConfigCoverageExclude),
+      _ => null,
+    };
 
-  var exclude = context.vars['exclude'];
-  if (exclude is String) {
-    exclude = List<String>.from(exclude.split(' '));
-  } else {
-    throw Exception(
-      'Exclude var must be a list of strings separated by spaces',
+    final rawConfigReportOn = config['report_on'];
+    final configReportOn = switch (rawConfigReportOn) {
+      String() => [rawConfigReportOn],
+      List<String>() => rawConfigReportOn,
+      List() => List<String>.from(rawConfigReportOn),
+      _ => null,
+    };
+
+    final rawConfigAnalyzeDirectories = config['analyze_directories'];
+    final configAnalyzeDirectories = switch (rawConfigAnalyzeDirectories) {
+      String() => [rawConfigAnalyzeDirectories],
+      List<String>() => rawConfigAnalyzeDirectories,
+      List() => List<String>.from(rawConfigAnalyzeDirectories),
+      _ => null,
+    };
+
+    final rawConfigFormatDirectories = config['format_directories'];
+    final configFormatDirectories = switch (rawConfigFormatDirectories) {
+      String() => [rawConfigFormatDirectories],
+      List<String>() => rawConfigFormatDirectories,
+      List() => List<String>.from(rawConfigFormatDirectories),
+      _ => null,
+    };
+
+    return Job(
+      name: package.pubspec.name,
+      packageDir: package.packageDir,
+      globPath: package.packageGlobPath,
+      usesFlutter: package.pubspec.dependencies.containsKey('flutter'),
+      dependenciesDirs: currentDependencies.join('\n'),
+      minimumCoverage: getMinCov(
+        package: package,
+        context: context,
+        config: config,
+      ),
+      coverageExcludes: configCoverageExclude ?? [],
+      analyzeDirectories: configAnalyzeDirectories ?? [],
+      formatDirectories: configFormatDirectories ?? [],
+      reportOnDirectories: configReportOn ?? [],
     );
-  }
+  });
+
+  final rawExclude = context.vars['exclude'];
+  final exclude = switch (rawExclude) {
+    String() => rawExclude.split(' '),
+    _ => const <String>[],
+  };
+
+  final finalJobs = jobs
+      .whereNot((job) => exclude.contains(job.name))
+      .sorted(((a, b) => a.name.compareTo(b.name)))
+      .map((e) => e.toJson())
+      .toList();
+
   context.vars = {
     ...context.vars,
-    'jobs': jobs.where((job) => !exclude.contains(job['name'])).toList(),
+    'jobs': finalJobs,
   };
 }
 
-Future<List<Package>> getPackages(List<String>? excludedPaths) async {
+Future<List<Package>> getPackages() async {
   final pubspecMatcher = Glob("**pubspec.yaml");
-  final defaultExcludedPaths = ['ios', 'macos', '.dart_tool', 'bricks', '.fvm'];
-  final badMatcher =
-      RegExp([...defaultExcludedPaths, ...?excludedPaths].join('|'));
+  final defaultExcludedPaths = [
+    'ios',
+    'macos',
+    '.dart_tool',
+    'bricks',
+    '.fvm',
+    'build'
+  ];
+  final badMatcher = RegExp(defaultExcludedPaths.join('|'));
 
   final packages = <Package>[];
 
@@ -86,8 +119,6 @@ Future<List<Package>> getPackages(List<String>? excludedPaths) async {
         globPath = parentPath;
       }
 
-      final coverageExclude = fileJson['coverage_exclude'];
-      final minimumCoverage = fileJson['minimum_coverage'] as num?;
       packages.add(
         Package(
           packageGlobPath: globPath,
@@ -95,10 +126,6 @@ Future<List<Package>> getPackages(List<String>? excludedPaths) async {
               ? parentPath.substring(2)
               : parentPath,
           pubspec: pubspec,
-          coverageExclude: coverageExclude is YamlList
-              ? List<String>.from(coverageExclude)
-              : [],
-          minimumCoverage: minimumCoverage,
         ),
       );
     }
@@ -158,15 +185,65 @@ Set<Package> _findDependencies({
   return ans;
 }
 
+Map<String, dynamic> readConfigFile({
+  required String path,
+  required Logger logger,
+}) {
+  final file = File('$path/actions_config.yaml');
+
+  if (!file.existsSync()) {
+    return const {};
+  }
+  final fileText = file.readAsStringSync();
+  try {
+    final fileJson = loadYaml(fileText) as YamlMap;
+    return {
+      for (final MapEntry(:key, :value) in fileJson.entries)
+        key.toString(): switch (value) {
+          YamlMap() => {...value},
+          YamlList() => [...value],
+          _ => value,
+        }
+    };
+  } on YamlException catch (e) {
+    logger.warn(e.message);
+    return const {};
+  } catch (e) {
+    logger.warn(e.toString());
+    return const {};
+  }
+}
+
+num getMinCov({
+  required Package package,
+  required HookContext context,
+  required Map<String, dynamic> config,
+}) {
+  final configMinimumCoverage = config['minimum_coverage'];
+  if (configMinimumCoverage is num) {
+    return configMinimumCoverage;
+  }
+  if (context.vars['minCoverage'] is num) {
+    return context.vars['minCoverage'];
+  }
+  if (context.vars['minCoverage'] is String) {
+    return num.parse(context.vars['minCoverage']!);
+  }
+  return 100;
+}
+
 class Job {
   const Job({
     required this.usesFlutter,
     required this.name,
     required this.packageDir,
     required this.dependenciesDirs,
-    required this.coverageExclude,
+    required this.coverageExcludes,
     required this.minimumCoverage,
     required this.globPath,
+    required this.analyzeDirectories,
+    required this.formatDirectories,
+    required this.reportOnDirectories,
   });
 
   Map<String, dynamic> toJson() => {
@@ -175,33 +252,40 @@ class Job {
         'packageDir': packageDir,
         'globPath': globPath,
         'dependenciesDirs': dependenciesDirs,
-        'coverageExclude': coverageExclude.join(' '),
-        'hasCoverageExcludes': hasCoverageExcludes,
+        'coverageExclude': coverageExcludes.join(' '),
+        'hasCoverageExcludes': coverageExcludes.isNotEmpty,
         'minCoverage': minimumCoverage,
+        'analyzeDirectories': analyzeDirectories.join(' '),
+        'formatDirectories': formatDirectories.join(' '),
+        'reportOnDirectories': reportOnDirectories.join(','),
+        'hasAnalyzeDirectories': analyzeDirectories.isNotEmpty,
+        'hasFormatDirectories': formatDirectories.isNotEmpty,
+        'hasReportOnDirectories': reportOnDirectories.isNotEmpty,
       };
 
   final bool usesFlutter;
   final String name;
   final String packageDir;
   final String dependenciesDirs;
-  final List<String> coverageExclude;
+  final List<String> coverageExcludes;
+  final List<String> analyzeDirectories;
+  final List<String> reportOnDirectories;
+  final List<String> formatDirectories;
   final num minimumCoverage;
   final String globPath;
 
-  bool get hasCoverageExcludes => coverageExclude.isNotEmpty;
+  bool get hasAnalyzeDirectories => analyzeDirectories.isNotEmpty;
+  bool get hasFormatDirectories => formatDirectories.isNotEmpty;
+  bool get hasReportOnDirectories => reportOnDirectories.isNotEmpty;
 }
 
 class Package {
   const Package({
     required this.packageDir,
     required this.pubspec,
-    required this.coverageExclude,
     required this.packageGlobPath,
-    this.minimumCoverage,
   });
   final String packageDir;
   final Pubspec pubspec;
-  final List<String> coverageExclude;
   final String packageGlobPath;
-  final num? minimumCoverage;
 }
