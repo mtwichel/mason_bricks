@@ -52,10 +52,9 @@ Future<void> run(HookContext context) async {
       _ => null,
     };
 
-    bool usesFlutter(Package package, [int level = 0]) {
+    bool usesFlutter(Package package) {
       return package.usesFlutter ||
-          depGraph[package]!
-              .any((dependency) => usesFlutter(dependency, level + 1));
+          depGraph[package]!.any((dependency) => usesFlutter(dependency));
     }
 
     return Job(
