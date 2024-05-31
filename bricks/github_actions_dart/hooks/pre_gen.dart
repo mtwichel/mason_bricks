@@ -52,11 +52,17 @@ Future<void> run(HookContext context) async {
       _ => null,
     };
 
+    bool usesFlutter(Package package, [int level = 0]) {
+      return package.usesFlutter ||
+          depGraph[package]!
+              .any((dependency) => usesFlutter(dependency, level + 1));
+    }
+
     return Job(
       name: package.pubspec.name,
       packageDir: package.packageDir,
       globPath: package.packageGlobPath,
-      usesFlutter: package.pubspec.dependencies.containsKey('flutter'),
+      usesFlutter: usesFlutter(package),
       dependenciesDirs: currentDependencies.join('\n'),
       minimumCoverage: getMinCov(
         package: package,
@@ -288,4 +294,8 @@ class Package {
   final String packageDir;
   final Pubspec pubspec;
   final String packageGlobPath;
+}
+
+extension on Package {
+  bool get usesFlutter => pubspec.dependencies.containsKey('flutter');
 }

@@ -1,3 +1,9 @@
+## 1.1.0
+- Added a parameter to add license checking workflow to make sure your dependencies have appropriate licenses
+- Upgraded default Flutter parameter to 3.22.1
+- Fixed issue where dependencies with dependencies that needed Flutter weren't marked as needing Flutter
+- Added `cancel-in-progress: true` to all workflows
+
 ## 1.0.0
 
 - **Breaking**: Package specific configurations now are read from a `actions_config.yaml` file, not the package's `pubspec`. See README for details.

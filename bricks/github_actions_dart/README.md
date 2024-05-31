@@ -8,10 +8,11 @@ Run `mason make github_actions_dart` in the root of your monorepo. This will:
 2. Create a `[PACKAGE_NAME]_verify_and_test.yaml` file for each package under the `.github/workflows` directory that calls the corresponding [Very Good Workflow](https://github.com/VeryGoodOpenSource/very_good_workflows). These will trigger on pull requests and pushes to the main/master branch, and will trigger if the current package has changes, or any of its path dependencies.
 3. Creates a `verify_github_actions.yaml` that will enforce `mason make github_actions_dart` has been run to make sure all your packages are covered.
 
-Optionally, it can generate
+Optionally, it can also generate
 
 - A spell check workflow from Very Good Workflows
 - A semantic pull request workflow from Very Good Workflows
+- A license checker workflow from Very Good Workflows
 - A dependabot file
 
 ## Updating

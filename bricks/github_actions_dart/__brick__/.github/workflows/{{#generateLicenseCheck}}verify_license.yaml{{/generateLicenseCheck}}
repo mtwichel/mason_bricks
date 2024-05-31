@@ -1,4 +1,4 @@
-name: Spell Check
+name: Verify License
 
 {{=<% %>=}}
 concurrency:
@@ -17,7 +17,7 @@ on:
       - main
 
 jobs:
-  spell_check:
-    uses: VeryGoodOpenSource/very_good_workflows/.github/workflows/spell_check.yml@v1
+  license_check:
+    uses: VeryGoodOpenSource/very_good_workflows/.github/workflows/license_check.yml@v1
     with:
-      config: {{{spellCheckConfig}}}
+      working_directory: "."
