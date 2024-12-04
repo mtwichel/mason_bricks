@@ -27,7 +27,7 @@ Future<void> run(HookContext context) async {
   final buildingCallback =
       context.logger.progress('Building dependency graph.');
   final depGraph = buildDependencyGraph(packages);
-  final jobs = await Future.wait(depGraph.keys.map((package) async {
+  final jobs = depGraph.keys.map((package) {
     final currentDependencies = depGraph[package]!
         .map((dep) => '      - "${dep.packageDir}/**"')
         .sorted();
@@ -71,7 +71,7 @@ Future<void> run(HookContext context) async {
       name: package.pubspec.name,
       packageDir: package.packageDir,
       globPath: package.packageGlobPath,
-      usesFlutter: await usesFlutter(package.packageDir),
+      usesFlutter: usesFlutter(package.packageDir),
       dependenciesDirs: currentDependencies.join('\n'),
       minimumCoverage: getMinCov(
         package: package,
@@ -84,7 +84,7 @@ Future<void> run(HookContext context) async {
       reportOnDirectories: configReportOn ?? [],
       checkLicenses: (config['check_licenses'] as bool?) ?? false,
     );
-  }));
+  });
 
   buildingCallback.complete();
   final finalJobs = jobs
@@ -343,11 +343,8 @@ class Package {
   final String packageGlobPath;
 }
 
-Future<bool> usesFlutter(String root) async {
+bool usesFlutter(String root) {
   final pubspecLock = File('$root/pubspec.lock');
-  if (!(await pubspecLock.exists())) {
-    await Process.run('dart', ['pub', 'get'], workingDirectory: root);
-  }
   final parsedPubspecLock = loadYaml(pubspecLock.readAsStringSync()) as YamlMap;
   final packages = parsedPubspecLock['packages'] as YamlMap;
   return packages.containsKey('flutter');

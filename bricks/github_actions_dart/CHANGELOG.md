@@ -1,3 +1,11 @@
+## 2.0.3
+
+- Adds back Very Good CLI to the `verify_github_actions.yaml` as the current solution was not reliable.
+
+## 2.0.2
+
+- Make `dart pub get` command run in shell so it works on github actions.
+
 ## 2.0.1
 
 - Removed installing Very Good CLI from `verify_github_actions.yaml` as it's not needed.

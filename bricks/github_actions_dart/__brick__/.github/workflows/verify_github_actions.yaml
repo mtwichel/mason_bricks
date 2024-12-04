@@ -27,6 +27,12 @@ jobs:
       - name: Install Mason
         run: dart pub global activate mason_cli
 
+      - name: Install Very Good ClI
+        run: dart pub global activate very_good_cli
+
+      - name: Get Packages
+        run: very_good packages get -r
+
       - name: Get Bricks
         run: mason add -g github_actions_dart
 
