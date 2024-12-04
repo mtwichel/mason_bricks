@@ -1,3 +1,8 @@
+## 2.0.1
+
+- Removed installing Very Good CLI from `verify_github_actions.yaml` as it's not needed.
+- `verify_github_actions.yaml` now manually fetches the workflow so that it still works if it's not included in your `mason.yaml` file (ie if it's installed globally).
+
 ## 2.0.0
 
 - **Breaking**: This brick now searches for Flutter in the `pubspec.lock` file, not the `pubspec.yaml`. This means

@@ -24,17 +24,11 @@ jobs:
         with:
           sdk: stable
 
-      - name: Install Very Good CLI
-        run: dart pub global activate very_good_cli
-
-      - name: Get Packages
-        run: very_good packages get -r
-
       - name: Install Mason
         run: dart pub global activate mason_cli
 
       - name: Get Bricks
-        run: mason get
+        run: mason add -g github_actions_dart
 
       - name: Test Github Actions Generation
         run: mason make github_actions_dart --on-conflict overwrite --exclude '{{{exclude}}}' --minCoverage {{minCoverage}} --flutterVersion '{{{flutterVersion}}}' --flutterChannel {{flutterChannel}} --dartChannel {{dartChannel}} --dependabotFrequency {{dependabotFrequency}} --generateDependabot {{generateDependabot}} --generateSemanticPullRequest {{generateSemanticPullRequest}} --generateSpellCheck {{generateSpellCheck}} --spellCheckConfig {{{spellCheckConfig}}} --workflowRef {{{workflowRef}}} --clearOldWorkflows {{{clearOldWorkflows}}} --mainJobName {{{mainJobName}}} --licenseCheckJobName {{{licenseCheckJobName}}} --set-exit-if-changed
