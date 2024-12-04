@@ -1,4 +1,4 @@
-name: {{jobs.name.titleCase()}}
+name: {{jobs.name.titleCase()}} Verify and Test
 {{=<% %>=}}
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -23,7 +23,7 @@ on:
 {{{jobs.dependenciesDirs}}}
 
 jobs:
-{{#jobs.usesFlutter}}  verify_and_test:
+{{#jobs.usesFlutter}}  {{mainJobName}}:
     name: Verify and Test
     uses: VeryGoodOpenSource/very_good_workflows/.github/workflows/flutter_package.yml@{{{workflowRef}}}
     with:
@@ -33,7 +33,7 @@ jobs:
       format_directories: "{{{jobs.formatDirectories}}}"{{/jobs.hasFormatDirectories}}
       min_coverage: {{{jobs.minCoverage}}}
       flutter_channel: {{flutterChannel}}
-      flutter_version: {{{flutterVersion}}}{{/jobs.usesFlutter}}{{^jobs.usesFlutter}}  verify_and_test:
+      flutter_version: {{{flutterVersion}}}{{/jobs.usesFlutter}}{{^jobs.usesFlutter}}  {{mainJobName}}:
     name: Verify and Test
     uses: VeryGoodOpenSource/very_good_workflows/.github/workflows/dart_package.yml@{{{workflowRef}}}
     with:
@@ -44,3 +44,8 @@ jobs:
       report_on: "{{{jobs.reportOnDirectories}}}"{{/jobs.hasReportOnDirectories}}
       dart_sdk: {{{dartChannel}}}
       min_coverage: {{{jobs.minCoverage}}}{{/jobs.usesFlutter}}
+{{#jobs.checkLicenses}}  {{licenseCheckJobName}}:
+    name: License Check
+    uses: VeryGoodOpenSource/very_good_workflows/.github/workflows/license_check.yml@v1
+    with:
+      working_directory: {{{jobs.packageDir}}}{{/jobs.checkLicenses}}

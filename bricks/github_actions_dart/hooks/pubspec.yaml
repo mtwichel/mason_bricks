@@ -7,5 +7,6 @@ dependencies:
   collection: ^1.18.0
   glob: ^2.1.0
   mason: ^0.1.0-dev.31
+  path: ^1.9.1
   pubspec_parse: ^1.2.1
   yaml: ^3.1.1

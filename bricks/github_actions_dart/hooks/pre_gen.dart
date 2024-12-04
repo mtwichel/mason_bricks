@@ -4,15 +4,30 @@ import 'package:collection/collection.dart';
 import 'package:glob/glob.dart';
 import 'package:glob/list_local_fs.dart';
 import 'package:mason/mason.dart';
+import 'package:path/path.dart' as p;
 import 'package:pubspec_parse/pubspec_parse.dart';
 import 'package:yaml/yaml.dart';
 
 Future<void> run(HookContext context) async {
+  final rawExclude = context.vars['exclude'];
+  final exclude = switch (rawExclude) {
+    String() => rawExclude.split(' '),
+    _ => const <String>[],
+  };
   final searchingCallback = context.logger.progress('Searching for packages.');
-  final pubspecs = await getPackages();
-  searchingCallback.complete('Found ${pubspecs.length} packages.');
-  final depGraph = buildDependencyGraph(pubspecs);
-  final jobs = depGraph.keys.map((package) {
+  final packages = await getPackages();
+  searchingCallback.complete('Found ${packages.length} packages.');
+  if (context.vars['clearOldWorkflows'] as bool) {
+    final clearingCallback = context.logger.progress('Removing old files.');
+    final deletedPackages = await clearOldPackages(
+        packages: packages, context: context, excludedPackages: exclude);
+    clearingCallback.complete('Deleted $deletedPackages files.');
+  }
+  context.logger.flush();
+  final buildingCallback =
+      context.logger.progress('Building dependency graph.');
+  final depGraph = buildDependencyGraph(packages);
+  final jobs = await Future.wait(depGraph.keys.map((package) async {
     final currentDependencies = depGraph[package]!
         .map((dep) => '      - "${dep.packageDir}/**"')
         .sorted();
@@ -52,16 +67,11 @@ Future<void> run(HookContext context) async {
       _ => null,
     };
 
-    bool usesFlutter(Package package) {
-      return package.usesFlutter ||
-          depGraph[package]!.any((dependency) => usesFlutter(dependency));
-    }
-
     return Job(
       name: package.pubspec.name,
       packageDir: package.packageDir,
       globPath: package.packageGlobPath,
-      usesFlutter: usesFlutter(package),
+      usesFlutter: await usesFlutter(package.packageDir),
       dependenciesDirs: currentDependencies.join('\n'),
       minimumCoverage: getMinCov(
         package: package,
@@ -72,25 +82,60 @@ Future<void> run(HookContext context) async {
       analyzeDirectories: configAnalyzeDirectories ?? [],
       formatDirectories: configFormatDirectories ?? [],
       reportOnDirectories: configReportOn ?? [],
+      checkLicenses: (config['check_licenses'] as bool?) ?? false,
     );
-  });
+  }));
 
-  final rawExclude = context.vars['exclude'];
-  final exclude = switch (rawExclude) {
-    String() => rawExclude.split(' '),
-    _ => const <String>[],
-  };
-
+  buildingCallback.complete();
   final finalJobs = jobs
       .whereNot((job) => exclude.contains(job.name))
       .sorted(((a, b) => a.name.compareTo(b.name)))
       .map((e) => e.toJson())
       .toList();
-
   context.vars = {
     ...context.vars,
     'jobs': finalJobs,
   };
+}
+
+Future<int> clearOldPackages({
+  required List<Package> packages,
+  required HookContext context,
+  required List<String> excludedPackages,
+}) async {
+  var deletedPackages = 0;
+  final packageFiles = packages
+      .where((e) => !excludedPackages.contains(e.pubspec.name))
+      .map((e) => '.github/workflows/${e.pubspec.name}.yaml');
+  final specialFiles = [
+    '.github/workflows/semantic_pull_request.yaml',
+    '.github/workflows/spell_check.yaml',
+    '.github/workflows/verify_github_actions.yaml'
+  ];
+  final glob = Glob('.github/workflows/*.yaml');
+  final results = glob.list();
+  await for (final result in results) {
+    final relativePath = p.relative(result.path);
+    if ((![...packageFiles, ...specialFiles].contains(relativePath) ||
+            (relativePath == '.github/workflows/semantic_pull_request.yaml' &&
+                !context.vars['generateSemanticPullRequest']) ||
+            (relativePath == '.github/workflows/spell_check.yaml' &&
+                !context.vars['generateSpellCheck'])) &&
+        await result.exists()) {
+      await result.delete();
+      context.logger
+          .delayed('  ${red.wrap('deleted')} ${darkGray.wrap(relativePath)}');
+      deletedPackages += 1;
+    }
+  }
+  final dependabotFile = File('.github/dependabot.yaml');
+  if (!context.vars['generateDependabot'] && await dependabotFile.exists()) {
+    await dependabotFile.delete();
+    context.logger.delayed(
+        '  ${red.wrap('deleted')} ${darkGray.wrap('.github/dependabot.yaml')}');
+    deletedPackages += 1;
+  }
+  return deletedPackages;
 }
 
 Future<List<Package>> getPackages() async {
@@ -249,6 +294,7 @@ class Job {
     required this.analyzeDirectories,
     required this.formatDirectories,
     required this.reportOnDirectories,
+    required this.checkLicenses,
   });
 
   Map<String, dynamic> toJson() => {
@@ -266,6 +312,7 @@ class Job {
         'hasAnalyzeDirectories': analyzeDirectories.isNotEmpty,
         'hasFormatDirectories': formatDirectories.isNotEmpty,
         'hasReportOnDirectories': reportOnDirectories.isNotEmpty,
+        'checkLicenses': checkLicenses,
       };
 
   final bool usesFlutter;
@@ -278,6 +325,7 @@ class Job {
   final List<String> formatDirectories;
   final num minimumCoverage;
   final String globPath;
+  final bool checkLicenses;
 
   bool get hasAnalyzeDirectories => analyzeDirectories.isNotEmpty;
   bool get hasFormatDirectories => formatDirectories.isNotEmpty;
@@ -295,6 +343,12 @@ class Package {
   final String packageGlobPath;
 }
 
-extension on Package {
-  bool get usesFlutter => pubspec.dependencies.containsKey('flutter');
+Future<bool> usesFlutter(String root) async {
+  final pubspecLock = File('$root/pubspec.lock');
+  if (!(await pubspecLock.exists())) {
+    await Process.run('dart', ['pub', 'get'], workingDirectory: root);
+  }
+  final parsedPubspecLock = loadYaml(pubspecLock.readAsStringSync()) as YamlMap;
+  final packages = parsedPubspecLock['packages'] as YamlMap;
+  return packages.containsKey('flutter');
 }

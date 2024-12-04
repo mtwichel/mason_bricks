@@ -1,4 +1,17 @@
+## 2.0.0
+
+- **Breaking**: This brick now searches for Flutter in the `pubspec.lock` file, not the `pubspec.yaml`. This means
+  1. If you have not done a `dart pub get` in a particular package (ie it couldn't find a `pubspec.lock` file), the brick will run pub get in that file.
+  2. It will now choose the Flutter builder if Flutter is used IN ANY transitive dependency. This means you won't have to add Flutter as a dependency just to force the correct workflow to run.
+- **Breaking**: Removed the `generateLicenseCheck` variable. Now variables are configured in the `actions_config.yaml` for each individual package. See the README for details.
+- **Breaking**: Rename `dependabot.yml` to `dependabot.yaml` for consistency with the other workflows.
+- **Breaking**: Renames package check files to `[PACKAGE_NAME].yaml` from `[PACKAGE_NAME]_verify_and_test.yaml`.
+- Added the ability to delete all other workflow files not controlled by this brick by setting the `clearOldWorkflows` to `true`.
+- Added the `mainJobName` and `licenseCheckJobName` variables, which allows you to customize the name of the jobs generated.
+- Bumped the default Flutter version to 3.24.4.
+
 ## 1.1.0
+
 - Added a parameter to add license checking workflow to make sure your dependencies have appropriate licenses
 - Upgraded default Flutter parameter to 3.22.1
 - Fixed issue where dependencies with dependencies that needed Flutter weren't marked as needing Flutter
