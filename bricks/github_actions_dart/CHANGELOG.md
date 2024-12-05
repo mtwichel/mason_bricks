@@ -1,3 +1,7 @@
+## 2.0.4
+
+- Fixes fetching packages by installing Flutter instead of Dart in `verify_github_actions.yaml`
+
 ## 2.0.3
 
 - Adds back Very Good CLI to the `verify_github_actions.yaml` as the current solution was not reliable.
