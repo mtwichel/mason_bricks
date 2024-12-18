@@ -1,3 +1,7 @@
+## 2.0.5
+
+- Inject Flutter version variables into `verify_github_actions.yaml`
+
 ## 2.0.4
 
 - Fixes fetching packages by installing Flutter instead of Dart in `verify_github_actions.yaml`
