@@ -1,3 +1,8 @@
+## 3.0.0
+
+- Workflow variables are now configured in the `workflows_config.json` file so it's easier to reference and change those values.
+- Added support for Dart workflows. Learn more at https://dart.dev/tools/pub/workspaces
+
 ## 2.0.5
 
 - Inject Flutter version variables into `verify_github_actions.yaml`
