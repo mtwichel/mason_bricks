@@ -1,6 +1,11 @@
+## 4.1.0
+
+- Auto detects /test, /routes, and /bin directories to add to the analyze and format directories.
+
 ## 4.0.0
 
 - Removed the dependency on Very Good Workflows. Now generates workflows with the steps directly.
+- Updated default Flutter version to 3.38.2
 
 ## 3.0.0
 

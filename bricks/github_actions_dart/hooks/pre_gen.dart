@@ -85,6 +85,27 @@ Future<void> run(HookContext context) async {
       useFlutter = usesFlutter(package.packageDir);
     }
 
+    final testDir = Directory('${package.packageDir}/test');
+    final testDirExists = testDir.existsSync();
+    final routesDir = Directory('${package.packageDir}/routes');
+    final routesDirExists = routesDir.existsSync();
+    final binDir = Directory('${package.packageDir}/bin');
+    final binDirExists = binDir.existsSync();
+
+    final defaultAnalyzeDirs = <String>['lib'];
+    if (testDirExists) defaultAnalyzeDirs.add('test');
+    if (routesDirExists) defaultAnalyzeDirs.add('routes');
+    if (binDirExists) defaultAnalyzeDirs.add('bin');
+
+    final defaultFormatDirs = <String>['lib'];
+    if (testDirExists) defaultFormatDirs.add('test');
+    if (routesDirExists) defaultFormatDirs.add('routes');
+    if (binDirExists) defaultFormatDirs.add('bin');
+
+    final defaultReportOnDirs = <String>['lib'];
+    if (routesDirExists) defaultReportOnDirs.add('routes');
+    if (binDirExists) defaultReportOnDirs.add('bin');
+
     return Job(
       name: package.pubspec.name,
       packageDir: package.packageDir,
@@ -97,9 +118,9 @@ Future<void> run(HookContext context) async {
         config: config,
       ),
       coverageExcludes: configCoverageExclude ?? [],
-      analyzeDirectories: configAnalyzeDirectories ?? ['lib', 'test'],
-      formatDirectories: configFormatDirectories ?? ['lib', 'test'],
-      reportOnDirectories: configReportOn ?? ['lib'],
+      analyzeDirectories: configAnalyzeDirectories ?? defaultAnalyzeDirs,
+      formatDirectories: configFormatDirectories ?? defaultFormatDirs,
+      reportOnDirectories: configReportOn ?? defaultReportOnDirs,
       runBlocLint: getRunBlocLint(
         package: package,
         config: config,
