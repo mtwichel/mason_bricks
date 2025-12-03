@@ -23,28 +23,61 @@ on:
 {{{jobs.dependenciesDirs}}}
 
 jobs:
-{{#jobs.usesFlutter}}  {{mainJobName}}:
+  {{mainJobName}}:
     name: Verify and Test
-    uses: VeryGoodOpenSource/very_good_workflows/.github/workflows/flutter_package.yml@{{{workflowRef}}}
-    with:
-      working_directory: {{{jobs.packageDir}}}{{#jobs.hasCoverageExcludes}}
-      coverage_excludes: "{{{jobs.coverageExclude}}}"{{/jobs.hasCoverageExcludes}}{{#jobs.hasAnalyzeDirectories}}
-      analyze_directories: "{{{jobs.analyzeDirectories}}}"{{/jobs.hasAnalyzeDirectories}}{{#jobs.hasFormatDirectories}}
-      format_directories: "{{{jobs.formatDirectories}}}"{{/jobs.hasFormatDirectories}}
-      min_coverage: {{{jobs.minCoverage}}}
-      flutter_channel: {{flutterChannel}}
-      flutter_version: {{{flutterVersion}}}{{/jobs.usesFlutter}}{{^jobs.usesFlutter}}  {{mainJobName}}:
-    name: Verify and Test
-    uses: VeryGoodOpenSource/very_good_workflows/.github/workflows/dart_package.yml@{{{workflowRef}}}
-    with:
-      working_directory: {{{jobs.packageDir}}}{{#jobs.hasCoverageExcludes}}
-      coverage_excludes: "{{{jobs.coverageExclude}}}"{{/jobs.hasCoverageExcludes}}{{#jobs.hasAnalyzeDirectories}}
-      analyze_directories: "{{{jobs.analyzeDirectories}}}"{{/jobs.hasAnalyzeDirectories}}{{#jobs.hasFormatDirectories}}
-      format_directories: "{{{jobs.formatDirectories}}}"{{/jobs.hasFormatDirectories}}{{#jobs.hasReportOnDirectories}}
-      report_on: "{{{jobs.reportOnDirectories}}}"{{/jobs.hasReportOnDirectories}}
-      dart_sdk: {{{dartChannel}}}
-      min_coverage: {{{jobs.minCoverage}}}{{/jobs.usesFlutter}}
-{{#jobs.checkLicenses}}  {{licenseCheckJobName}}:
+    defaults:
+      run:
+        working-directory: {{{jobs.packageDir}}}
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 📚 Git Checkout
+        uses: actions/checkout@v6
+
+      {{#jobs.usesFlutter}}- name: 🐦 Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: {{{flutterVersion}}}
+          channel: {{{flutterChannel}}}
+          cache: true
+          cache-key: flutter-:os:-:channel:-:version:-:arch:-:hash:-{{=<% %>=}}${{ hashFiles('**/pubspec.lock') }}<%={{ }}=%>
+
+      - name: 📦 Install Dependencies
+        run: |
+          flutter pub global activate very_good_cli
+          very_good packages get --recursive --ignore=!*{{/jobs.usesFlutter}}{{^jobs.usesFlutter}}- name: 🎯 Setup Dart
+        uses: dart-lang/setup-dart@v1
+        with:
+          sdk: {{{dartChannel}}}
+
+      - name: 📦 Install Dependencies
+        run: dart pub get{{/jobs.usesFlutter}}
+
+      - name: ✨ Check Formatting
+        run: dart format --set-exit-if-changed {{jobs.formatDirectories}}
+      
+      - name: 🕵️ Analyze
+        {{#jobs.usesFlutter}}run: flutter analyze {{jobs.analyzeDirectories}}{{/jobs.usesFlutter}}{{^jobs.usesFlutter}}run: dart analyze --fatal-infos --fatal-warnings {{jobs.analyzeDirectories}}{{/jobs.usesFlutter}}{{#jobs.runBlocLint}}
+
+      - name: ✅ Bloc Lint
+        run: |
+          {{#jobs.usesFlutter}}flutter pub global activate bloc_tools{{/jobs.usesFlutter}}{{^jobs.usesFlutter}}dart pub global activate bloc_tools{{/jobs.usesFlutter}}
+          bloc lint .{{/jobs.runBlocLint}}{{#jobs.runTests}}
+
+      - name: 🧪 Run Tests
+        run: {{#jobs.usesFlutter}}very_good test -j 4 --optimization --coverage --test-randomize-ordering-seed random{{/jobs.usesFlutter}}{{^jobs.usesFlutter}}|
+          dart pub global activate coverage 1.15.0
+          dart test -j 4 --coverage=coverage --platform=vm && dart pub global run coverage:format_coverage --lcov --in=coverage --out=coverage/lcov.info --packages=.dart_tool/package_config.json --report-on={{jobs.reportOnDirectories}}{{/jobs.usesFlutter}}
+
+      - name: 📊 Check Code Coverage
+        uses: VeryGoodOpenSource/very_good_coverage@v3
+        with:
+          path: {{{jobs.packageDir}}}/coverage/lcov.info{{#jobs.hasCoverageExcludes}}
+          exclude: "{{{jobs.coverageExclude}}}"{{/jobs.hasCoverageExcludes}}
+          min_coverage: {{jobs.minCoverage}}{{/jobs.runTests}}{{#jobs.checkLicenses}}
+
+  {{licenseCheckJobName}}:
     name: License Check
     uses: VeryGoodOpenSource/very_good_workflows/.github/workflows/license_check.yml@v1
     with:

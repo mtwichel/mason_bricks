@@ -97,9 +97,17 @@ Future<void> run(HookContext context) async {
         config: config,
       ),
       coverageExcludes: configCoverageExclude ?? [],
-      analyzeDirectories: configAnalyzeDirectories ?? [],
-      formatDirectories: configFormatDirectories ?? [],
-      reportOnDirectories: configReportOn ?? [],
+      analyzeDirectories: configAnalyzeDirectories ?? ['lib', 'test'],
+      formatDirectories: configFormatDirectories ?? ['lib', 'test'],
+      reportOnDirectories: configReportOn ?? ['lib'],
+      runBlocLint: getRunBlocLint(
+        package: package,
+        config: config,
+      ),
+      runTests: getRunTests(
+        package: package,
+        config: config,
+      ),
       checkLicenses: (config['check_licenses'] as bool?) ?? false,
     );
   });
@@ -110,6 +118,7 @@ Future<void> run(HookContext context) async {
       .sorted(((a, b) => a.name.compareTo(b.name)))
       .map((e) => e.toJson())
       .toList();
+
   context.vars = {
     ...context.vars,
     'jobs': finalJobs,
@@ -300,6 +309,34 @@ num getMinCov({
   return 100;
 }
 
+bool getRunBlocLint({
+  required Package package,
+  required Map<String, dynamic> config,
+}) {
+  // If explicitly set in config, use that value
+  if (config['run_bloc_lint'] is bool) {
+    return config['run_bloc_lint'] as bool;
+  }
+
+  // Otherwise, check if bloc_lint is in dependencies or devDependencies
+  return package.pubspec.dependencies.containsKey('bloc_lint') ||
+      package.pubspec.devDependencies.containsKey('bloc_lint');
+}
+
+bool getRunTests({
+  required Package package,
+  required Map<String, dynamic> config,
+}) {
+  // If explicitly set in config, use that value
+  if (config['run_tests'] is bool) {
+    return config['run_tests'] as bool;
+  }
+
+  // Otherwise, check if test directory exists
+  final testDir = Directory('${package.packageDir}/test');
+  return testDir.existsSync();
+}
+
 class Job {
   const Job({
     required this.usesFlutter,
@@ -313,6 +350,8 @@ class Job {
     required this.formatDirectories,
     required this.reportOnDirectories,
     required this.checkLicenses,
+    required this.runBlocLint,
+    required this.runTests,
   });
 
   Map<String, dynamic> toJson() => {
@@ -331,6 +370,8 @@ class Job {
         'hasFormatDirectories': formatDirectories.isNotEmpty,
         'hasReportOnDirectories': reportOnDirectories.isNotEmpty,
         'checkLicenses': checkLicenses,
+        'runBlocLint': runBlocLint,
+        'runTests': runTests,
       };
 
   final bool usesFlutter;
@@ -344,6 +385,8 @@ class Job {
   final num minimumCoverage;
   final String globPath;
   final bool checkLicenses;
+  final bool runBlocLint;
+  final bool runTests;
 
   bool get hasAnalyzeDirectories => analyzeDirectories.isNotEmpty;
   bool get hasFormatDirectories => formatDirectories.isNotEmpty;
