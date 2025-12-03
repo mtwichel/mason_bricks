@@ -14,7 +14,7 @@ vars:
   flutterVersion:
     type: string
     description: The version of Flutter to use.
-    default: 3.24.4
+    default: 3.38.2
   flutterChannel:
     type: string
     description: The channel to use for Flutter.

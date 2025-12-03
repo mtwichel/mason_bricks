@@ -41,3 +41,5 @@ You can override properties for individual packages. They should be added to a `
 | `report_on`           | List of Strings | ["lib"]         | Directories that should be reported in coverage reports.                                                 |
 | `minimum_coverage`    | int             | 100             | The lowest coverage threshold considered passing.                                                        |
 | `check_licenses`      | boolean         | false           | If true, will generate a job for checking the licenses of this package to make sure they are permissive. |
+| `run_bloc_lint`       | boolean         | false           | If true, will run bloc lint on this package.                                                             |
+| `run_tests`           | boolean         | true            | If false, will skip running tests and code coverage checks for this package.                             |

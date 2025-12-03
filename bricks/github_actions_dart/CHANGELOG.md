@@ -1,3 +1,7 @@
+## 4.0.0
+
+- Removed the dependency on Very Good Workflows. Now generates workflows with the steps directly.
+
 ## 3.0.0
 
 - Workflow variables are now configured in the `workflows_config.json` file so it's easier to reference and change those values.
