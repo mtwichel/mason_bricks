@@ -67,11 +67,29 @@ Future<void> run(HookContext context) async {
       _ => null,
     };
 
+    bool useFlutter;
+    if (package.pubspec.resolution == 'workspace') {
+      // search for other pubspecs in the workspace
+      final root = packages.singleWhereOrNull((e) {
+        final workspace = e.pubspec.workspace;
+        if (workspace == null) return false;
+        final relativePath = p.relative(package.packageDir, from: e.packageDir);
+        return workspace.contains(relativePath);
+      });
+      if (root == null) {
+        context.logger.warn('Could not find root for ${package.pubspec.name}');
+        throw Exception('Could not find root for ${package.pubspec.name}');
+      }
+      useFlutter = usesFlutter(root.packageDir);
+    } else {
+      useFlutter = usesFlutter(package.packageDir);
+    }
+
     return Job(
       name: package.pubspec.name,
       packageDir: package.packageDir,
       globPath: package.packageGlobPath,
-      usesFlutter: usesFlutter(package.packageDir),
+      usesFlutter: useFlutter,
       dependenciesDirs: currentDependencies.join('\n'),
       minimumCoverage: getMinCov(
         package: package,
@@ -345,6 +363,9 @@ class Package {
 
 bool usesFlutter(String root) {
   final pubspecLock = File('$root/pubspec.lock');
+  if (!pubspecLock.existsSync()) {
+    return false;
+  }
   final parsedPubspecLock = loadYaml(pubspecLock.readAsStringSync()) as YamlMap;
   final packages = parsedPubspecLock['packages'] as YamlMap;
   return packages.containsKey('flutter');
