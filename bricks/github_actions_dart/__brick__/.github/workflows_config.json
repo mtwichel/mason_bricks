@@ -12,5 +12,6 @@
   "workflowRef": "{{{workflowRef}}}",
   "clearOldWorkflows": {{clearOldWorkflows}},
   "mainJobName": "{{{mainJobName}}}",
-  "licenseCheckJobName": "{{{licenseCheckJobName}}}"
+  "licenseCheckJobName": "{{{licenseCheckJobName}}}",
+  "preserve": "{{{preserve}}}"
 }

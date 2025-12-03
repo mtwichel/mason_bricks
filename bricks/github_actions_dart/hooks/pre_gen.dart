@@ -14,13 +14,21 @@ Future<void> run(HookContext context) async {
     String() => rawExclude.split(' '),
     _ => const <String>[],
   };
+  final rawPreserve = context.vars['preserve'];
+  final preserve = switch (rawPreserve) {
+    String() => rawPreserve.split(' ').where((e) => e.isNotEmpty).toList(),
+    _ => const <String>[],
+  };
   final searchingCallback = context.logger.progress('Searching for packages.');
   final packages = await getPackages();
   searchingCallback.complete('Found ${packages.length} packages.');
   if (context.vars['clearOldWorkflows'] as bool) {
     final clearingCallback = context.logger.progress('Removing old files.');
     final deletedPackages = await clearOldPackages(
-        packages: packages, context: context, excludedPackages: exclude);
+        packages: packages,
+        context: context,
+        excludedPackages: exclude,
+        preserveFiles: preserve);
     clearingCallback.complete('Deleted $deletedPackages files.');
   }
   context.logger.flush();
@@ -150,6 +158,7 @@ Future<int> clearOldPackages({
   required List<Package> packages,
   required HookContext context,
   required List<String> excludedPackages,
+  required List<String> preserveFiles,
 }) async {
   var deletedPackages = 0;
   final packageFiles = packages
@@ -160,16 +169,46 @@ Future<int> clearOldPackages({
     '.github/workflows/spell_check.yaml',
     '.github/workflows/verify_github_actions.yaml'
   ];
+  // Convert preserve file names to full paths
+  final preservePaths = preserveFiles
+      .map((file) => file.startsWith('.github/workflows/')
+          ? file
+          : '.github/workflows/$file')
+      .toSet();
+
   final glob = Glob('.github/workflows/*.yaml');
   final results = glob.list();
   await for (final result in results) {
+    if (!await result.exists()) continue;
+
     final relativePath = p.relative(result.path);
-    if ((![...packageFiles, ...specialFiles].contains(relativePath) ||
-            (relativePath == '.github/workflows/semantic_pull_request.yaml' &&
-                !context.vars['generateSemanticPullRequest']) ||
-            (relativePath == '.github/workflows/spell_check.yaml' &&
-                !context.vars['generateSpellCheck'])) &&
-        await result.exists()) {
+
+    // Skip files that are explicitly preserved
+    if (preservePaths.contains(relativePath)) continue;
+
+    // Determine if file should be kept
+    final isInKeepList =
+        [...packageFiles, ...specialFiles].contains(relativePath);
+
+    // Check if special files should be kept based on generation flags
+    final isSemanticPRFile =
+        relativePath == '.github/workflows/semantic_pull_request.yaml';
+    final isSpellCheckFile =
+        relativePath == '.github/workflows/spell_check.yaml';
+
+    final shouldKeepSemanticPR =
+        isSemanticPRFile && context.vars['generateSemanticPullRequest'] == true;
+    final shouldKeepSpellCheck =
+        isSpellCheckFile && context.vars['generateSpellCheck'] == true;
+
+    // Delete if:
+    // 1. File is not in the keep list, OR
+    // 2. It's a special file that shouldn't be generated
+    final shouldDelete = !isInKeepList ||
+        (isSemanticPRFile && !shouldKeepSemanticPR) ||
+        (isSpellCheckFile && !shouldKeepSpellCheck);
+
+    if (shouldDelete) {
       await result.delete();
       context.logger
           .delayed('  ${red.wrap('deleted')} ${darkGray.wrap(relativePath)}');
@@ -393,6 +432,7 @@ class Job {
         'checkLicenses': checkLicenses,
         'runBlocLint': runBlocLint,
         'runTests': runTests,
+        'hasMinimumCoverage': hasMinimumCoverage,
       };
 
   final bool usesFlutter;
@@ -412,6 +452,7 @@ class Job {
   bool get hasAnalyzeDirectories => analyzeDirectories.isNotEmpty;
   bool get hasFormatDirectories => formatDirectories.isNotEmpty;
   bool get hasReportOnDirectories => reportOnDirectories.isNotEmpty;
+  bool get hasMinimumCoverage => minimumCoverage > 0;
 }
 
 class Package {

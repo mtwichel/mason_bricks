@@ -68,14 +68,14 @@ jobs:
       - name: 🧪 Run Tests
         run: {{#jobs.usesFlutter}}very_good test -j 4 --optimization --coverage --test-randomize-ordering-seed random{{/jobs.usesFlutter}}{{^jobs.usesFlutter}}|
           dart pub global activate coverage 1.15.0
-          dart test -j 4 --coverage=coverage --platform=vm && dart pub global run coverage:format_coverage --lcov --in=coverage --out=coverage/lcov.info --packages=.dart_tool/package_config.json --report-on={{jobs.reportOnDirectories}}{{/jobs.usesFlutter}}
+          dart test -j 4 --coverage=coverage --platform=vm && dart pub global run coverage:format_coverage --lcov --in=coverage --out=coverage/lcov.info --report-on={{jobs.reportOnDirectories}}{{/jobs.usesFlutter}}{{#jobs.hasMinimumCoverage}}
 
       - name: 📊 Check Code Coverage
         uses: VeryGoodOpenSource/very_good_coverage@v3
         with:
           path: {{{jobs.packageDir}}}/coverage/lcov.info{{#jobs.hasCoverageExcludes}}
           exclude: "{{{jobs.coverageExclude}}}"{{/jobs.hasCoverageExcludes}}
-          min_coverage: {{jobs.minCoverage}}{{/jobs.runTests}}{{#jobs.checkLicenses}}
+          min_coverage: {{jobs.minCoverage}}{{/jobs.hasMinimumCoverage}}{{/jobs.runTests}}{{#jobs.checkLicenses}}
 
   {{licenseCheckJobName}}:
     name: License Check

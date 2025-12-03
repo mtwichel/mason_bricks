@@ -1,11 +1,15 @@
 name: github_actions_dart
 description: A brick that simplifies generating Github actions for Dart/Flutter monorepos
 repository: https://github.com/mtwichel/mason_bricks/tree/main/bricks/github_actions_dart
-version: 4.1.0
+version: 4.2.0
 vars:
   exclude:
     type: string
     description: A space separated list of packages that shouldn't generate a workflow file.
+    default: ""
+  preserve:
+    type: string
+    description: A space separated list of workflow files to preserve (e.g., "custom_workflow.yaml deploy.yaml"). These files will not be deleted even if they match template naming schemes.
     default: ""
   minCoverage:
     type: number

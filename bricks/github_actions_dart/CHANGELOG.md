@@ -1,3 +1,8 @@
+## 4.2.0
+
+- Added the ability to preserve specific workflow files by adding them to the `preserve` variable.
+- If minimum coverage is set to 0, it will not check code coverage.
+
 ## 4.1.0
 
 - Auto detects /test, /routes, and /bin directories to add to the analyze and format directories.
