@@ -138,6 +138,10 @@ Future<void> run(HookContext context) async {
         config: config,
       ),
       checkLicenses: (config['check_licenses'] as bool?) ?? false,
+      runsOn: getRunsOn(
+        context: context,
+        config: config,
+      ),
     );
   });
 
@@ -397,6 +401,25 @@ bool getRunTests({
   return testDir.existsSync();
 }
 
+String getRunsOn({
+  required HookContext context,
+  required Map<String, dynamic> config,
+}) {
+  // Per-package config takes precedence
+  final configRunsOn = config['runs_on'];
+  if (configRunsOn is String && configRunsOn.isNotEmpty) {
+    return configRunsOn;
+  }
+
+  // Global config (variables passed in)
+  final globalRunsOn = context.vars['runsOn'];
+  if (globalRunsOn is String && globalRunsOn.isNotEmpty) {
+    return globalRunsOn;
+  }
+
+  return 'ubuntu-latest';
+}
+
 class Job {
   const Job({
     required this.usesFlutter,
@@ -412,6 +435,7 @@ class Job {
     required this.checkLicenses,
     required this.runBlocLint,
     required this.runTests,
+    required this.runsOn,
   });
 
   Map<String, dynamic> toJson() => {
@@ -433,6 +457,7 @@ class Job {
         'runBlocLint': runBlocLint,
         'runTests': runTests,
         'hasMinimumCoverage': hasMinimumCoverage,
+        'runsOn': runsOn,
       };
 
   final bool usesFlutter;
@@ -448,6 +473,7 @@ class Job {
   final bool checkLicenses;
   final bool runBlocLint;
   final bool runTests;
+  final String runsOn;
 
   bool get hasAnalyzeDirectories => analyzeDirectories.isNotEmpty;
   bool get hasFormatDirectories => formatDirectories.isNotEmpty;

@@ -1,3 +1,7 @@
+## 4.3.0
+
+- Added the ability to set the runner to use for workflow jobs by adding the `runsOn` variable.
+
 ## 4.2.0
 
 - Added the ability to preserve specific workflow files by adding them to the `preserve` variable.
