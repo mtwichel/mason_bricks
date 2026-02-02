@@ -1,7 +1,7 @@
 name: github_actions_dart
 description: A brick that simplifies generating Github actions for Dart/Flutter monorepos
 repository: https://github.com/mtwichel/mason_bricks/tree/main/bricks/github_actions_dart
-version: 4.2.0
+version: 4.3.0
 vars:
   exclude:
     type: string
@@ -15,6 +15,10 @@ vars:
     type: number
     description: The minimum coverage required for a package to be considered passing.
     default: 100
+  runsOn:
+    type: string
+    description: The runner to use for workflow jobs (e.g., ubuntu-latest, ubuntu-22.04).
+    default: ubuntu-latest
   flutterVersion:
     type: string
     description: The version of Flutter to use.

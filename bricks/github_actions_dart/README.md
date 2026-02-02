@@ -39,17 +39,20 @@ When running `mason make github_actions_dart`, you can configure global options:
 
 - **`clearOldWorkflows`**: When enabled, automatically deletes workflow files for packages that no longer exist or special files that shouldn't be generated. Files listed in `preserve` will always be kept.
 
+- **`runsOn`**: The runner to use for workflow jobs (e.g., `ubuntu-latest`, `ubuntu-22.04`). Can be overridden per-package in `actions_config.yaml`. Defaults to `ubuntu-latest`.
+
 ## Individual Package Specifications
 
 You can override properties for individual packages. They should be added to a `actions_config.yaml` file in the same directory as the `pubspec.yaml`.
 
-| Parameter             | Type            | Default                              | Description                                                                                              |
-| --------------------- | --------------- | ------------------------------------ | -------------------------------------------------------------------------------------------------------- |
-| `coverage_exclude`    | List of Strings | [ ]                                  | Glob patterns to match file names that should be excluded from code coverage (ie `**/*.g.dart`).         |
-| `analyze_directories` | List of Strings | ["lib", "test", "routes", "bin"]*   | Directories that should be analyzed. Only includes directories that exist.                                |
-| `format_directories`  | List of Strings | ["lib", "test", "routes", "bin"]*   | Directories that should be checked for formatting. Only includes directories that exist.                  |
-| `report_on`           | List of Strings | ["lib", "routes", "bin"]*            | Directories that should be reported in coverage reports. Only includes directories that exist.          |
-| `minimum_coverage`    | int             | 100             | The lowest coverage threshold considered passing.                                                        |
-| `check_licenses`      | boolean         | false           | If true, will generate a job for checking the licenses of this package to make sure they are permissive. |
-| `run_bloc_lint`       | boolean         | false           | If true, will run bloc lint on this package.                                                             |
-| `run_tests`           | boolean         | true            | If false, will skip running tests and code coverage checks for this package.                             |
+| Parameter             | Type            | Default                            | Description                                                                                                  |
+| --------------------- | --------------- | ---------------------------------- | ------------------------------------------------------------------------------------------------------------ |
+| `coverage_exclude`    | List of Strings | [ ]                                | Glob patterns to match file names that should be excluded from code coverage (ie `**/*.g.dart`).             |
+| `analyze_directories` | List of Strings | ["lib", "test", "routes", "bin"]\* | Directories that should be analyzed. Only includes directories that exist.                                   |
+| `format_directories`  | List of Strings | ["lib", "test", "routes", "bin"]\* | Directories that should be checked for formatting. Only includes directories that exist.                     |
+| `report_on`           | List of Strings | ["lib", "routes", "bin"]\*         | Directories that should be reported in coverage reports. Only includes directories that exist.               |
+| `minimum_coverage`    | int             | 100                                | The lowest coverage threshold considered passing.                                                            |
+| `check_licenses`      | boolean         | false                              | If true, will generate a job for checking the licenses of this package to make sure they are permissive.     |
+| `run_bloc_lint`       | boolean         | false                              | If true, will run bloc lint on this package.                                                                 |
+| `run_tests`           | boolean         | true                               | If false, will skip running tests and code coverage checks for this package.                                 |
+| `runs_on`             | string          | ubuntu-latest                      | The runner to use for this package's workflow (e.g., ubuntu-22.04, macos-latest). Overrides global `runsOn`. |
