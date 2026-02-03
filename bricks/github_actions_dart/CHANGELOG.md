@@ -1,3 +1,7 @@
+## 4.3.1
+
+- Fixed issue where the `runsOn` variable was not being set in the `workflows_config.json` file.
+
 ## 4.3.0
 
 - Added the ability to set the runner to use for workflow jobs by adding the `runsOn` variable.

@@ -13,5 +13,6 @@
   "clearOldWorkflows": {{clearOldWorkflows}},
   "mainJobName": "{{{mainJobName}}}",
   "licenseCheckJobName": "{{{licenseCheckJobName}}}",
-  "preserve": "{{{preserve}}}"
+  "preserve": "{{{preserve}}}",
+  "runsOn": "{{{runsOn}}}"
 }
