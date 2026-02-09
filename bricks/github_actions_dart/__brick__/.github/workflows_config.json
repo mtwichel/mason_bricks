@@ -14,5 +14,7 @@
   "mainJobName": "{{{mainJobName}}}",
   "licenseCheckJobName": "{{{licenseCheckJobName}}}",
   "preserve": "{{{preserve}}}",
-  "runsOn": "{{{runsOn}}}"
+  "runsOn": "{{{runsOn}}}",
+  "setup_step_name": "{{{setup_step_name}}}",
+  "setup_step_run": "{{{setup_step_run}}}"
 }

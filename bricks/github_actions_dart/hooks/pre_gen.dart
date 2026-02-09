@@ -42,6 +42,7 @@ Future<void> run(HookContext context) async {
 
     final config =
         readConfigFile(logger: context.logger, path: package.packageDir);
+    final setupStep = getSetupStep(context: context, config: config);
 
     final rawConfigCoverageExclude = config['coverage_exclude'];
     final configCoverageExclude = switch (rawConfigCoverageExclude) {
@@ -142,6 +143,8 @@ Future<void> run(HookContext context) async {
         context: context,
         config: config,
       ),
+      setupStepName: setupStep.name,
+      setupStepRun: _indentRunBody(setupStep.run),
     );
   });
 
@@ -420,6 +423,73 @@ String getRunsOn({
   return 'ubuntu-latest';
 }
 
+({String name, String run}) getSetupStep({
+  required HookContext context,
+  required Map<String, dynamic> config,
+}) {
+  const defaultName = 'Setup';
+
+  String stringFromDynamic(dynamic v) {
+    if (v == null) return '';
+    if (v is String) return v;
+    // Values from readConfigFile nested maps can be YamlScalar
+    if (v is YamlNode) return v.value?.toString() ?? '';
+    return v.toString();
+  }
+
+  // Per-package name override: use with global run when package sets only a name
+  var packageNameOverride = '';
+
+  // Per-package: setup_step (map with name and run) or setup_step_name / setup_step_run
+  final setupStepMap = config['setup_step'];
+  if (setupStepMap is Map) {
+    final run = stringFromDynamic(setupStepMap['run']).trim();
+    final name = stringFromDynamic(setupStepMap['name']).trim();
+    if (run.isNotEmpty) {
+      return (name: name.isEmpty ? defaultName : name, run: run);
+    }
+    if (name.isNotEmpty) packageNameOverride = name;
+  }
+  final configName = config['setup_step_name'];
+  final configRun = config['setup_step_run'];
+  if (configName is String || configRun is String) {
+    final run = stringFromDynamic(configRun).trim();
+    if (run.isNotEmpty) {
+      final name = stringFromDynamic(configName).trim();
+      return (name: name.isEmpty ? defaultName : name, run: run);
+    }
+    final name = stringFromDynamic(configName).trim();
+    if (name.isNotEmpty) packageNameOverride = name;
+  }
+
+  // Global config (variables passed in). Respect per-package name override when using global run.
+  final globalName = context.vars['setup_step_name'];
+  final globalRun = context.vars['setup_step_run'];
+  if (globalName is String || globalRun is String) {
+    final run = stringFromDynamic(globalRun).trim();
+    if (run.isNotEmpty) {
+      final name = packageNameOverride.isNotEmpty
+          ? packageNameOverride
+          : stringFromDynamic(globalName).trim();
+      return (name: name.isEmpty ? defaultName : name, run: run);
+    }
+  }
+
+  return (name: '', run: '');
+}
+
+/// Indents each line of the run body so the generated workflow YAML is valid under `run: |`.
+/// Blank lines (empty or whitespace-only) are left empty. Non-blank lines keep their original
+/// content including leading whitespace, so shell script indentation (if/for blocks, etc.) is preserved.
+String _indentRunBody(String run) {
+  if (run.isEmpty) return run;
+  const indent = '          '; // 10 spaces to align under run: |
+  return run.split('\n').map((line) {
+    final isBlank = line.trim().isEmpty;
+    return isBlank ? '' : '$indent$line';
+  }).join('\n');
+}
+
 class Job {
   const Job({
     required this.usesFlutter,
@@ -436,6 +506,8 @@ class Job {
     required this.runBlocLint,
     required this.runTests,
     required this.runsOn,
+    required this.setupStepName,
+    required this.setupStepRun,
   });
 
   Map<String, dynamic> toJson() => {
@@ -458,6 +530,9 @@ class Job {
         'runTests': runTests,
         'hasMinimumCoverage': hasMinimumCoverage,
         'runsOn': runsOn,
+        'setupStepName': setupStepName,
+        'setupStepRun': setupStepRun,
+        'hasSetupStep': hasSetupStep,
       };
 
   final bool usesFlutter;
@@ -474,11 +549,14 @@ class Job {
   final bool runBlocLint;
   final bool runTests;
   final String runsOn;
+  final String setupStepName;
+  final String setupStepRun;
 
   bool get hasAnalyzeDirectories => analyzeDirectories.isNotEmpty;
   bool get hasFormatDirectories => formatDirectories.isNotEmpty;
   bool get hasReportOnDirectories => reportOnDirectories.isNotEmpty;
   bool get hasMinimumCoverage => minimumCoverage > 0;
+  bool get hasSetupStep => setupStepRun.isNotEmpty;
 }
 
 class Package {

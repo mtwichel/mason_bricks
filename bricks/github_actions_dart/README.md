@@ -41,6 +41,8 @@ When running `mason make github_actions_dart`, you can configure global options:
 
 - **`runsOn`**: The runner to use for workflow jobs (e.g., `ubuntu-latest`, `ubuntu-22.04`). Can be overridden per-package in `actions_config.yaml`. Defaults to `ubuntu-latest`.
 
+- **`setup_step_name`** and **`setup_step_run`**: Optional. If `setup_step_run` is non-empty, a setup step runs immediately after checkout and before Flutter/Dart (e.g. to install system deps like `xz-utils`). Use `\n` for newlines in the run body when setting via `workflows_config.json`. Can be overridden per-package in `actions_config.yaml`. Defaults empty (no step).
+
 ## Individual Package Specifications
 
 You can override properties for individual packages. They should be added to a `actions_config.yaml` file in the same directory as the `pubspec.yaml`.
@@ -56,3 +58,4 @@ You can override properties for individual packages. They should be added to a `
 | `run_bloc_lint`       | boolean         | false                              | If true, will run bloc lint on this package.                                                                 |
 | `run_tests`           | boolean         | true                               | If false, will skip running tests and code coverage checks for this package.                                 |
 | `runs_on`             | string          | ubuntu-latest                      | The runner to use for this package's workflow (e.g., ubuntu-22.04, macos-latest). Overrides global `runsOn`. |
+| `setup_step`          | object          | —                                  | Optional. Object with `name` and `run` for a setup step (runs after checkout, before Flutter/Dart). YAML multiline for `run` is supported. Overrides global; empty or omit = use global or no step. Alternatively use `setup_step_name` and `setup_step_run`. |

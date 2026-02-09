@@ -1,7 +1,7 @@
 name: github_actions_dart
 description: A brick that simplifies generating Github actions for Dart/Flutter monorepos
 repository: https://github.com/mtwichel/mason_bricks/tree/main/bricks/github_actions_dart
-version: 4.3.1
+version: 4.4.0
 vars:
   exclude:
     type: string
@@ -74,3 +74,11 @@ vars:
     type: string
     default: license_check
     description: The name of the job where licenses are checked for permissiveness.
+  setup_step_name:
+    type: string
+    description: Optional name for a setup step that runs before other steps (e.g. install system deps). Use with setup_step_run; use \n for newlines in run when setting via config file.
+    default: ""
+  setup_step_run:
+    type: string
+    description: Optional run script body for a setup step that runs before other steps (e.g. install system deps). Use \n for newlines when setting via config file.
+    default: ""
