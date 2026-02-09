@@ -35,7 +35,13 @@ jobs:
       - name: 📚 Git Checkout
         uses: actions/checkout@v6
 
-      {{#jobs.usesFlutter}}- name: 🐦 Setup Flutter
+      {{#jobs.hasSetupStep}}- name: {{{jobs.setupStepName}}}
+        run: |
+{{{jobs.setupStepRun}}}
+
+        working-directory: .
+
+      {{/jobs.hasSetupStep}}{{#jobs.usesFlutter}}- name: 🐦 Setup Flutter
         uses: subosito/flutter-action@v2
         with:
           flutter-version: {{{flutterVersion}}}
