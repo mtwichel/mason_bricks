@@ -1,4 +1,4 @@
-name: {{jobs.name.titleCase()}} Verify and Test
+name: {{jobs.name.titleCase()}}
 {{=<% %>=}}
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -10,7 +10,7 @@ on:
       - master
       - main
     paths:
-      - ".github/workflows/{{{jobs.name}}}_verify_and_test.yaml"
+      - ".github/workflows/{{{jobs.name}}}.yaml"
       - "{{{jobs.globPath}}}"
 {{{jobs.dependenciesDirs}}}
   push:

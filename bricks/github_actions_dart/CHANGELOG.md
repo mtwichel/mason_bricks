@@ -1,3 +1,7 @@
+## 4.4.1
+
+- Fixed issue where the `mainJobName` variable was not being used in the workflow file.
+
 ## 4.4.0
 
 - Added optional inline setup step (name + run) that runs after checkout and before Flutter/Dart. Configure globally via `setup_step_name` and `setup_step_run` in `workflows_config.json`, or per-package via `setup_step` (object with `name` and `run`) or `setup_step_name` / `setup_step_run` in `actions_config.yaml`. Use for runner-level setup (e.g. installing system packages like `xz-utils`).
